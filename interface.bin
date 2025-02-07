@@ -1,0 +1,70 @@
+#include 
+#include 
+#include 
+#include 
+#include 
+
+#define MAX_COMMAND_LENGTH 100
+#define MAX_ARGUMENTS 10
+
+// Функция для разбора введенной команды
+int parse_command(char *command, char **arguments) {
+    int i = 0;
+    char *token = strtok(command, " ");  // Разделение команды по пробелам
+
+    while (token != NULL && i < MAX_ARGUMENTS - 1) {
+        arguments[i++] = token;          // Сохранение аргумента
+        token = strtok(NULL, " ");        // Получение следующего аргумента
+    }
+
+    arguments[i] = NULL;                  // Конец массива аргументов
+
+    return i;
+}
+
+// Функция для выполнения команды
+int execute_command(char **arguments) {
+    pid_t pid = fork();  // Создание нового процесса
+
+    if (pid == 0) {  // Дочерний процесс
+        execvp(arguments[0], arguments);  // Выполнение команды
+        perror("Ошибка выполнения команды");  // Вывод ошибки, если execvp возвращает значение
+        exit(1);                         // Выход из дочернего процесса с кодом ошибки
+    } else if (pid < 0) {  // Ошибка при создании процесса
+        perror("Ошибка при создании процесса");
+        return -1;
+    } else {  // Родительский процесс
+        int status;
+        waitpid(pid, &status, 0);  // Ожидание завершения дочернего процесса
+        return status;
+    }
+}
+
+int main() {
+    char command[MAX_COMMAND_LENGTH];  // Буфер для хранения введенной команды
+    char *arguments[MAX_ARGUMENTS];     // Массив для хранения аргументов команды
+
+    while (1) {
+        printf("shell> ");                // Вывод приглашения командной строки
+        fflush(stdout);                   // Очистка выходного буфера
+
+        if (fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL)  // Чтение команды из ввода
+            break;                           // Выход, если достигнут конец файла (Ctrl+D)
+
+        command[strcspn(command, "\n")] = 0;  // Удаление символа новой строки из команды
+
+        if (strcmp(command, "exit") == 0)  // Проверка команды "exit"
+            break;                           // Выход из цикла, если введена команда "exit"
+
+        if (command[0] == '\0')  // Проверка пустой команды
+            continue;              // Переход к следующей итерации цикла
+
+        parse_command(command, arguments);  // Разбор введенной команды
+        execute_command(arguments);        // Выполнение команды
+    }
+
+    printf("Выход из оболочки.\n");  // Вывод сообщения о выходе
+    return 0;                           // Завершение программы
+}
+gcc shell.c -o shell
+./shell
