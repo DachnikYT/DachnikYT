@@ -1,0 +1,161 @@
+// Определения
+#define VIDEO_MEMORY 0xb8000
+#define ROWS 25
+#define COLS 80
+
+// Функция для записи символа в видеопамять
+void print(const char *string) {
+    unsigned char *video = (unsigned char *) VIDEO_MEMORY;
+    int i = 0;
+    int j = 0;
+    while (string[i] != '\0') {
+        video[j++] = string[i++];
+        video[j++] = 0x07; // Белый цвет на черном фоне
+    }
+}
+
+// Основная функция ядра
+void kernel_main() {
+    // Очищаем экран
+    for (int i = 0; i < ROWS * COLS * 2; i++) {
+        unsigned char *video = (unsigned char *) VIDEO_MEMORY;
+        video[i] = 0;
+    }
+
+    // Выводим сообщение на экран
+    print("Привет, мир! Это мое ядро ОС.");
+}# Кросс-компилятор
+CROSS_COMPILE = i686-elf-
+
+# Компилятор и линкер
+CC = $(CROSS_COMPILE)gcc
+LD = $(CROSS_COMPILE)ld
+
+# Флаги компиляции
+CFLAGS = -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -fno-builtin
+LDFLAGS = -T linker.ld -m elf_i386
+
+# Имя выходного файла
+KERNEL_BIN = kernel.bin
+
+# Исходные файлы
+KERNEL_SRC = kernel.c
+
+# Объектные файлы
+KERNEL_OBJ = $(KERNEL_SRC:.c=.o)
+
+all: $(KERNEL_BIN)
+
+# Правило компиляции .c файлов в .o файлы
+%.o: %.c
+ $(CC) $(CFLAGS) -c $< -o $@
+
+# Правило линковки объектных файлов в исполняемый файл ядра
+$(KERNEL_BIN): $(KERNEL_OBJ)
+ $(LD) $(LDFLAGS) $(KERNEL_OBJ) -o $@
+
+clean:
+ rm -f $(KERNEL_OBJ) $(KERNEL_BIN)
+
+run: $(KERNEL_BIN)
+ qemu-system-i386 -kernel $(KERNEL_BIN)ENTRY(kernel_main)
+
+SECTIONS {
+ . = 0x100000; /* Загрузить ядро по адресу 1MB */
+
+ .text :
+ {
+  *(.text)
+ }
+
+ .data :
+ {
+  *(.data)
+ }
+
+ .bss :
+ {
+  *(.bss)
+ }
+}
+// Определения
+#define VIDEO_MEMORY 0xb8000
+#define ROWS 25
+#define COLS 80
+
+// Функция для записи символа в видеопамять
+void print(const char *string) {
+    unsigned char *video = (unsigned char *) VIDEO_MEMORY;
+    int i = 0;
+    int j = 0;
+    while (string[i] != '\0') {
+        video[j++] = string[i++];
+        video[j++] = 0x07; // Белый цвет на черном фоне
+    }
+}
+
+// Основная функция ядра
+void kernel_main() {
+    // Очищаем экран
+    for (int i = 0; i < ROWS * COLS * 2; i++) {
+        unsigned char *video = (unsigned char *) VIDEO_MEMORY;
+        video[i] = 0;
+    }
+
+    // Выводим сообщение на экран
+    print("Привет, мир! Это мое ядро ОС.");
+}# Кросс-компилятор
+CROSS_COMPILE = i686-elf-
+
+# Компилятор и линкер
+CC = $(CROSS_COMPILE)gcc
+LD = $(CROSS_COMPILE)ld
+
+# Флаги компиляции
+CFLAGS = -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -fno-builtin
+LDFLAGS = -T linker.ld -m elf_i386
+
+# Имя выходного файла
+KERNEL_BIN = kernel.bin
+
+# Исходные файлы
+KERNEL_SRC = kernel.c
+
+# Объектные файлы
+KERNEL_OBJ = $(KERNEL_SRC:.c=.o)
+
+all: $(KERNEL_BIN)
+
+# Правило компиляции .c файлов в .o файлы
+%.o: %.c
+ $(CC) $(CFLAGS) -c $< -o $@
+
+# Правило линковки объектных файлов в исполняемый файл ядра
+$(KERNEL_BIN): $(KERNEL_OBJ)
+ $(LD) $(LDFLAGS) $(KERNEL_OBJ) -o $@
+
+clean:
+ rm -f $(KERNEL_OBJ) $(KERNEL_BIN)
+
+run: $(KERNEL_BIN)
+ qemu-system-i386 -kernel $(KERNEL_BIN)ENTRY(kernel_main)
+
+SECTIONS {
+ . = 0x100000; /* Загрузить ядро по адресу 1MB */
+
+ .text :
+ {
+  *(.text)
+ }
+
+ .data :
+ {
+  *(.data)
+ }
+
+ .bss :
+ {
+  *(.bss)
+ }
+}
+
