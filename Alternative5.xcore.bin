@@ -103,7 +103,7 @@ void kernel_main() {
     }
 
     // Выводим сообщение на экран
-    print("Привет, мир! Это мое ядро ОС.");
+    print("PIZ-DOS OS created by in Alternative 5.x core.");
 }# Кросс-компилятор
 CROSS_COMPILE = i686-elf-
 
